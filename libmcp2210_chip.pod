@@ -1,0 +1,173 @@
+=head1 NAME
+
+libmcp2210_chip - MCP2210 Chip control functionality
+
+=head1 SYNOPSIS
+
+B<unsigned> B<short> B<mcp2210_chip_get_function> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<pin>)
+
+B<void> B<mcp2210_chip_set_function> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<pin>, B<unsigned> B<short> I<func>)
+
+B<unsigned> B<short> B<mcp2210_chip_get_default_output> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<pin>)
+
+B<void> B<mcp2210_chip_set_default_output> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<pin>, B<unsigned> B<short> I<val>)
+
+B<unsigned> B<short> B<mcp2210_chip_get_default_direction> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<pin>)
+
+B<void> B<mcp2210_chip_set_default_direction> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<pin>, B<unsigned> B<short> I<val>)
+
+B<unsigned> B<short> B<mcp2210_chip_get_wakeup> (B<mcp2210_packet> I<chip_packet>)
+
+B<void> B<mcp2210_chip_set_wakeup> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<enabled>)
+
+B<unsigned> B<short> B<mcp2210_chip_get_gp6_mode> (B<mcp2210_packet> I<chip_packet>)
+
+B<void> B<mcp2210_chip_set_gp6_mode> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<mode>)
+
+B<unsigned> B<short> B<mcp2210_chip_get_no_spi_release> (B<mcp2210_packet> I<chip_packet>)
+
+B<void> B<mcp2210_chip_set_no_spi_release> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<no_release>)
+
+B<unsigned> B<short> B<mcp2210_chip_get_access_control> (B<mcp2210_packet> I<chip_packet>)
+
+B<void> B<mcp2210_chip_set_access_control> (B<mcp2210_packet> I<chip_packet>, B<unsigned> B<short> I<setting>)
+
+B<void> B<mcp2210_chip_set_access_password> (B<mcp2210_packet> I<chip_packet>, B<const> B<char> *I<passwd>)
+
+=head1 DESCRIPTION
+
+These routines control the chip settings of the device; both the runtime
+settings and the power-on defaults stored in NVRAM. The runtime settings are
+obtained with I<MCP2210_CHIP_GET> command and applied with I<MCP2210_CHIP_SET>.
+The power-on defaults are read from NVRAM and wrote back with
+I<MCP2210_NVRAM_PARAM_CHIP> command.
+
+B<mcp2210_chip_get_function> returns the function configured for the given
+I<pin> in given I<packet>. B<mcp2210_chip_set_function> sets it to I<func>.
+The chip functions are as follows:
+
+=over
+
+=item I<MCP2210_CHIP_PIN_GPIO>
+
+The pin functions as GPIO pin.
+
+=item I<MCP2210_CHIP_PIN_CS>
+
+The pin is used as chip-select.
+
+=item I<MCP2210_CHIP_PIN_FUNC>
+
+The pin is used for a dedicated pin-specific function.
+
+=back
+
+B<mcp2210_chip_get_default_output> returns the default value configured for the
+given GPIO I<pin> in given I<packet>. B<mcp2210_chip_set_default_output>
+sets it to I<val>.
+
+B<mcp2210_chip_get_default_direction> returns the default I/O direction
+configured for the given GPIO I<pin> in given I<packet>.
+B<mcp2210_chip_set_default_direction> sets it to I<val>.
+
+B<mcp2210_chip_get_wakeup> returns the external wake up indication is enabled
+in given I<packet>. B<mcp2210_chip_set_wakeup> configures it as indicated by
+I<enabled> argument.
+
+B<mcp2210_chip_get_gp6_mode> returns the interrupt mode used by I<GP6> pin if
+it's configured as function pin. B<mcp2210_chip_set_gp6_mode>
+sets it to I<mode>.
+
+The count modes are:
+
+=over
+
+=item I<MCP2210_CHIP_GP6_CNT_HI_PULSE>
+
+Count the high pulses.
+
+=item I<MCP2210_CHIP_GP6_CNT_LO_PULSE>
+
+Count the low pulses.
+
+=item I<MCP2210_CHIP_GP6_CNT_UP_EDGE>
+
+Count the rising edges.
+
+=item I<MCP2210_CHIP_GP6_CNT_DN_EDGE>
+
+Count the falling edges.
+
+=item I<MCP2210_CHIP_GP6_CNT_NONE>
+
+Disable counting.
+
+=back
+
+B<mcp2210_chip_get_no_spi_release> returns zero if SPI bus release between
+transaction is enabled in given I<packet>. B<mcp2210_chip_set_no_spi_release>
+disables it I<no_release> is set to 1.
+
+B<mcp2210_chip_get_access_control> returns chip access control mode indicated
+in given I<packet>. B<mcp2210_chip_set_access_control>
+sets it to I<setting>.
+
+=over
+
+=item I<MCP2210_CHIP_PROTECT_NONE>
+
+Disable chip protection.
+
+=item I<MCP2210_CHIP_PROTECT_PASSWD>
+
+Protect chip settings with a password (set by
+L<mcp2210_chip_set_access_password(3)>. The EEPROM and NVRAM settings won't be
+writable until the password is sent with L<mcp2210_unlock_eeprom(3)>.
+
+=item I<MCP2210_CHIP_PROTECT_LOCKED>
+
+Permanently lock the device. Use with caution!
+
+=back
+
+B<mcp2210_chip_set_access_password> sets the access password in given
+I<packet>. The password can not be read in. Only makes sense with protection
+set to I<MCP2210_CHIP_PROTECT_PASSWD>.
+
+=head1 RETURN VALUE
+
+None of the functions is able to fail with an error code.
+
+=head1 EXAMPLES
+
+ /* Read in the runtime chip settings. */
+ if ((ret = mcp2210_command (fd, packet, MCP2210_CHIP_GET)) < 0)
+   goto out;
+
+ /* Configure GPIO pin 8 to default to output an on. */
+ mcp2210_chip_set_function (packet, 8, MCP2210_CHIP_PIN_GPIO);
+ mcp2210_chip_set_default_direction (packet, 8, 0);
+ mcp2210_chip_set_default_output (packet, 8, 1);
+
+ /* Save the settings above as NVRAM power-on defaults. */
+ if (ret = mcp2210_set_nvram (fd, packet, MCP2210_NVRAM_PARAM_CHIP) < 0)
+   goto out;
+
+ /* Configure GP6 as the interrupt counter. */
+ mcp2210_chip_set_function (packet, 6, MCP2210_CHIP_PIN_FUNC);
+ mcp2210_chip_set_gp6_mode (packet, MCP2210_CHIP_GP6_CNT_DN_EDGE);
+
+ /* Apply the settings at runtime. */
+ if ((ret = mcp2210_command (fd, packet, MCP2210_CHIP_SET)) < 0)
+   goto out;
+
+ sleep (10);
+ printf ("%d interrups counted in 10 seconds\n",
+     mcp2210_gp6_count_get (fd, packet, 0));
+
+ out: if (ret < 0)
+   fprintf (stderr, "Trouble: %s\n", mcp2210_strerror (err));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>, L<libmcp2210_gpio(3)>, L<libmcp2210_nvram(3)>

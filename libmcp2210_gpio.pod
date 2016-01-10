@@ -1,0 +1,63 @@
+=head1 NAME
+
+libmcp2210_gpio - MCP2210 GPIO direction and value control
+
+=head1 SYNOPSIS
+
+B<unsigned> B<short> B<mcp2210_gpio_get_pin> (B<mcp2210_packet> I<gpio_packet>, B<unsigned> B<short> I<pin>)
+
+B<void> B<mcp2210_gpio_set_pin> (B<mcp2210_packet> I<gpio_packet>, B<unsigned> B<short> I<pin>, B<unsigned> B<short> I<val>)
+
+=head1 DESCRIPTION
+
+These routines get and set the runtim individual pin settings; either pin
+direction or pin value. The direction settings are obtained with
+I<MCP2210_GPIO_DIR_GET> command and applied with I<MCP2210_GPIO_DIR_SET>. The
+pin value settings are obtained with I<MCP2210_GPIO_VAL_GET> command and
+applied with I<MCP2210_GPIO_VAL_SET>.
+
+The power-on defaults and pin functions (whether GPIO is possible on a pin)
+are controlled separately. See L<mcp2210_chip(3)>.
+
+B<mcp2210_gpio_get_pin> returns the value or direction of the GPIO pin
+specified with I<pin> has in I<gpio_packet>. B<mcp2210_gpio_set_pin> sets it to
+I<val>. The I<pin> value has to be from 0 to I<MCP2210_GPIO_PINS>.
+
+=head1 RETURN VALUE
+
+None of the functions is able to fail with an error code.
+
+=head1 EXAMPLES
+
+  /* Read the GPIO direction settings. */
+  if ((ret = mcp2210_command (fd, packet, MCP2210_GPIO_DIR_GET)) < 0)
+      goto out;
+
+  /* Set the GPIO pin 8 as output and 7 as input. */
+  mcp2210_gpio_set_pin (packet, 8, 0):
+  mcp2210_gpio_set_pin (packet, 7, 1):
+
+  /* Apply the change. */
+  ret = mcp2210_command (fd, packet, MCP2210_GPIO_DIR_SET)) < 0)
+      goto out;
+
+  /* Read the GPIO values. */
+  if ((ret = mcp2210_command (fd, packet, MCP2210_GPIO_VAL_GET)) < 0)
+      goto out;
+
+  /* Toggle the output on GPIO pin 8. */
+  mcp2210_gpio_set_pin (packet, 8, !mcp2210_gpio_get_pin (8));
+
+  /* Apply the change. */
+  ret = mcp2210_command (fd, packet, MCP2210_GPIO_VAL_SET)) < 0)
+      goto out;
+
+  /* Read in the input on pin 7. */
+  printf ("Pin 7: %s\n", mcp2210_gpio_get_pin (7) ? "on" : "off");
+
+  out: if (ret < 0)
+      fprintf (stderr, "Trouble: %s\n", mcp2210_strerror (err));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>, L<libmcp2210_chip(3)>

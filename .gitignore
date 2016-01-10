@@ -1,0 +1,8 @@
+libmcp2210*.3
+mcp2210*.1
+libmcp2210*.so*
+mcp2210*.o
+mcp2210-*.tar.gz
+mcp2210-*/
+mcp2210-util
+mcp2210.pdf

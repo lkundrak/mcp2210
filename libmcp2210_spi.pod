@@ -1,0 +1,118 @@
+=head1 NAME
+
+libmcp2210_spi - MCP2210 SPI settings and bus access
+
+=head1 SYNOPSIS
+
+B<long> B<mcp2210_spi_get_bitrate> (B<mcp2210_packet> I<spi_packet>);
+
+B<void> B<mcp2210_spi_set_bitrate> (B<mcp2210_packet> I<spi_packet>, B<long> I<bitrate>);
+
+B<unsigned> B<short> B<mcp2210_spi_get_pin_active_cs> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<short> I<pin>);
+
+B<void> B<mcp2210_spi_set_pin_active_cs> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<short> I<pin>, B<unsigned> B<short> I<val>);
+
+B<unsigned> B<short> B<mcp2210_spi_get_pin_idle_cs> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<short> I<pin>);
+
+B<void> B<mcp2210_spi_set_pin_idle_cs> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<short> I<pin>, B<unsigned> B<short> I<val>);
+
+B<unsigned> B<int> B<mcp2210_spi_get_cs_data_delay_100us> (B<mcp2210_packet> I<spi_packet>);
+
+B<void> B<mcp2210_spi_set_cs_data_delay_100us> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<int> I<delay_100us>);
+
+B<unsigned> B<int> B<mcp2210_spi_get_data_cs_delay_100us> (B<mcp2210_packet> I<spi_packet>);
+
+B<void> B<mcp2210_spi_set_data_cs_delay_100us> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<int> I<delay_100us>);
+
+B<unsigned> B<int> B<mcp2210_spi_get_byte_delay_100us> (B<mcp2210_packet> I<spi_packet>);
+
+B<void> B<mcp2210_spi_set_byte_delay_100us> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<int> I<delay_100us>);
+
+B<unsigned> B<int> B<mcp2210_spi_get_transaction_size> (B<mcp2210_packet> I<spi_packet>);
+
+B<void> B<mcp2210_spi_set_transaction_size> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<int> I<size>);
+
+B<unsigned> B<short> B<mcp2210_spi_get_mode> (B<mcp2210_packet> I<spi_packet>);
+
+B<void> B<mcp2210_spi_set_mode> (B<mcp2210_packet> I<spi_packet>, B<unsigned> B<short> I<mode>);
+
+B<int> B<mcp2210_spi_transfer> (B<int> I<fd>, B<mcp2210_packet> I<spi_packet>, B<char> *I<data>, B<short> I<len>);
+
+=head1 DESCRIPTION
+
+These routines control the SPI settings of the device, both the runtime
+settings and the power-on defaults stored in NVRAM, and drive the SPI
+transactions. The runtime settings are obtained with I<MCP2210_SPI_GET>
+command and applied with I<MCP2210_SPI_SET>. The power-on defaults are
+read from NVRAM and wrote back with I<MCP2210_NVRAM_PARAM_SPI> command.
+
+B<mcp2210_spi_get_bitrate>() returns the bit rate set in I<spi_packet>.
+B<mcp2210_spi_set_bitrate>() sets the bit rate to given I<bitrate>.
+
+B<mcp2210_spi_get_pin_active_cs>() returns non-zero if I<spi_packet> configures
+the pin numered I<pin> as active during the transaction when its function is
+set to CS. B<mcp2210_spi_set_pin_active_cs>() configures the given CS pin
+value to I<val> during the transaction.
+
+B<mcp2210_spi_get_pin_idle_cs>() returns non-zero if I<spi_packet> configures
+the pin numered I<pin> as active when its function is set to CS and no
+transaction is in progress. B<mcp2210_spi_set_pin_idle_cs>() configures the
+given CS pin value to I<val> when no transaction is in progress.
+
+B<mcp2210_spi_get_cs_data_delay_100us>() gets the configured delay between
+asserting CS and transmission of first data bit as configured in I<spi_packet>
+in the unit of 100 microseconds. B<mcp2210_spi_set_cs_data_delay_100us>()
+configures the value to I<delay_100us>.
+
+B<mcp2210_spi_get_data_cs_delay_100us>() gets the configured delay between
+transmission of the last data bit and deasserting CS as configured in
+I<spi_packet> in the unit of 100 microseconds.
+B<mcp2210_spi_set_data_cs_delay_100us>() configures the value to I<delay_100us>.
+
+B<mcp2210_spi_get_byte_delay_100us>() gets the configured delay between
+transmission of the bytes as configured in I<spi_packet> in the unit of 100
+microseconds. B<mcp2210_spi_set_byte_delay_100us>() configures the value to
+I<delay_100us>.
+
+B<mcp2210_spi_get_transaction_size>() returns the transaction size set in
+I<spi_packet>. B<mcp2210_spi_set_transaction_size>() sets the transaction size
+to given I<size>.
+
+B<mcp2210_spi_get_mode>() returns the SPI mode set in I<spi_packet>.
+B<mcp2210_spi_set_mode>() sets the SPI mode to given I<mode>.
+
+B<mcp2210_spi_transfer>() transfers I<len> bytes from I<data> and replaces it
+with I<len> bytes received. You need to make sure the I<len> matches the
+SPI transaction size (B<mcp2210_spi_get_transaction_size>()) before calling
+it. B<mcp2210_spi_transfer>() is blocking and synchronizes with device
+timing calculated from I<spi_packet>.
+
+=head1 RETURN VALUE
+
+B<mcp2210_spi_transfer>() returns a negative value on error, zero on success.
+Other functions are not able to fail with an error code.
+
+=head1 EXAMPLES
+
+  char *data[666] = { ... };
+
+  /* Read in the runtime SPI settings. */
+  if ((ret = mcp2210_command (fd, packet, MCP2210_SPI_GET)) < 0)
+      goto out;
+
+  mcp2210_chip_set_bit_rate (packet, 16100);
+  mcp2210_spi_set_transaction_size (packet, sizeof (data));
+
+  /* Apply the settings at runtime. */
+  if ((ret = mcp2210_command (fd, packet, MCP2210_SPI_SET)) < 0)
+      goto out;
+
+  /* Now fire the transaction. */
+  ret = mcp2210_spi_transfer (fd, packet, data, sizeof (data));
+
+  out: if (ret < 0)
+      fprintf (stderr, "Trouble: %s\n", mcp2210_strerror (err));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>

@@ -1,0 +1,130 @@
+=head1 NAME
+
+libmcp2210_usb - MCP2210 USB key settings
+
+=head1 SYNOPSIS
+
+B<unsigned> B<short> B<mcp2210_usb_key_get_vid> (B<mcp2210_packet> I<usb_key_packet>);
+
+B<void> B<mcp2210_usb_key_set_vid> (B<mcp2210_packet> I<usb_key_packet>, B<unsigned> B<short> I<vid>);
+
+B<unsigned> B<short> B<mcp2210_usb_key_get_pid> (B<mcp2210_packet> I<usb_key_packet>);
+
+B<void> B<mcp2210_usb_key_set_pid> (B<mcp2210_packet> I<usb_key_packet>, B<unsigned> B<short> I<pid>);
+
+B<unsigned> B<short> B<mcp2210_usb_key_get_host_powered> (B<mcp2210_packet> I<usb_key_packet>);
+
+B<void> B<mcp2210_usb_key_set_host_powered> (B<mcp2210_packet> I<usb_key_packet>, B<unsigned> B<short> I<on>);
+
+B<unsigned> B<short> B<mcp2210_usb_key_get_self_powered> (B<mcp2210_packet> I<usb_key_packet>);
+
+B<void> B<mcp2210_usb_key_set_self_powered> (B<mcp2210_packet> I<usb_key_packet>, B<unsigned> B<short> I<on>);
+
+B<unsigned> B<short> B<mcp2210_usb_key_get_remote_wakeup> (B<mcp2210_packet> I<usb_key_packet>);
+
+B<void> B<mcp2210_usb_key_set_remote_wakeup> (B<mcp2210_packet> I<usb_key_packet>, B<unsigned> B<short> I<on>);
+
+B<unsigned> B<short> B<mcp2210_usb_key_get_current_2ma> (B<mcp2210_packet> I<usb_key_packet>);
+
+B<void> B<mcp2210_usb_key_set_current_2ma> (B<mcp2210_packet> I<usb_key_packet>, B<unsigned> B<short> I<current>);
+
+B<void> B<mcp2210_usb_key_get_to_set> (B<mcp2210_packet> I<get>, B<mcp2210_packet> I<set>);
+
+B<char> *B<mcp2210_usb_string_get> (B<mcp2210_packet> I<packet>);
+
+B<unsigned> B<short> B<mcp2210_usb_string_get_len> (B<mcp2210_packet> I<packet>);
+
+B<void> B<mcp2210_usb_string_set> (B<mcp2210_packet> I<packet>, B<const> B<char> *I<string>, B<short> I<len>);
+
+=head1 DESCRIPTION
+
+These routines control the contens of USB descriptors stored in the device NVRAM.
+They are read from the NVRAM and wrote back with
+I<MCP2210_NVRAM_PARAM_USB_KEY>, I<MCP2210_NVRAM_PARAM_PRODUCT> and
+I<MCP2210_NVRAM_PARAM_MANUFACT> commands.
+
+The following routines operate on I<MCP2210_NVRAM_PARAM_USB_KEY> packets:
+
+B<mcp2210_usb_key_get_vid>() returns the USB Vendor ID from I<usb_key_packet>
+while B<mcp2210_usb_key_set_vid>() sets it to given I<vid>.
+
+B<mcp2210_usb_key_get_pid>() returns the USB Product ID from I<usb_key_packet>
+while B<mcp2210_usb_key_set_pid>() sets it to given I<pid>.
+
+B<mcp2210_usb_key_get_host_powered>() returns a non-zero value if
+I<usb_key_packet> indicates that the device is being powered by the host.
+B<mcp2210_usb_key_set_host_powered>() sets the host powered flag to the value
+of I<on>.
+
+B<mcp2210_usb_key_get_self_powered>() returns a non-zero value if
+I<usb_key_packet> indicates that the device is self-powered.
+B<mcp2210_usb_key_set_self_powered>() sets the host powered flag to the value
+of I<on>.
+
+B<mcp2210_usb_key_get_remote_wakeup>() returns a non-zero value if
+I<usb_key_packet> indicates that the device supports remote wake-up.
+B<mcp2210_usb_key_set_remote_wakeup>() sets the host powered flag to the value
+of I<on>.
+
+B<mcp2210_usb_key_get_current_2ma>() returns a the current I<usb_key_packet>
+indicates the device requires in unit of 2 mA. B<mcp2210_usb_key_set_current_2ma>()
+returns the current that is set, in units of 2 mA as well.
+
+B<mcp2210_usb_key_get_to_set>() transforms the USB key packet I<get> that was
+read from the device to a packet I<set> that can be sent to it. The packets,
+despite holding the same information have different offsets for apparently no
+good reason at all.
+
+The following commands operate on I<MCP2210_NVRAM_PARAM_PRODUCT> and
+I<MCP2210_NVRAM_PARAM_MANUFACT> commands:
+
+*B<mcp2210_usb_string_get>() returns the pointer to the UTF-16 (little-endian)
+string descriptor (be it manufacturer or product) in the I<packet>. The number
+of valid (16-bit) characters can be obtained with
+B<mcp2210_usb_string_get_len>(). B<mcp2210_usb_string_set>() sets the string
+descriptor to an UTF-16 (little-endian) string of I<len> 16-bit characters.
+
+=head1 RETURN VALUE
+
+None of the functions is able to fail with an error code.
+
+=head1 EXAMPLES
+
+  /* Read in the USB key parameters from NVRAM. */
+  if (ret = mcp2210_get_nvram (fd, packet,
+                               MCP2210_NVRAM_PARAM_USB_KEY) < 0)
+      goto out;
+
+  /* Replace some parameters. */
+  mcp2210_usb_key_set_vid (packet, 0x0666);
+  mcp2210_usb_key_set_pid (packet, 0x8086);
+
+  /* Write the USB key parameters into NVRAM. */
+  if (ret = mcp2210_set_nvram (fd, packet,
+                               MCP2210_NVRAM_PARAM_USB_KEY) < 0) {
+      goto out;
+  }
+
+  /* Read the product descriptor from the NVRAM. */
+  if (ret = mcp2210_get_nvram (fd, packet,
+                               MCP2210_NVRAM_PARAM_USB_PRODUCT) < 0) {
+      goto out;
+  }
+
+  /* Replace the product descriptor. */
+  mcp2210_usb_string_set (packet, "B\000i\000t\000 \000"
+                          "B\000u\000c\000k\000e\000t\000",
+                          strlen ("Bit Bucket"));
+
+  /* Write the product descriptor into NVRAM. */
+  if (ret = mcp2210_set_nvram (fd, packet,
+                               MCP2210_NVRAM_PARAM_USB_PRODUCT) < 0) {
+      goto out;
+  }
+
+  out: if (ret < 0)
+      fprintf (stderr, "Trouble: %s\n", mcp2210_strerror (err));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>, L<libmcp2210_nvram(3)>

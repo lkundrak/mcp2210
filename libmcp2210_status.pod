@@ -1,0 +1,72 @@
+=head1 NAME
+
+libmcp2210_status - MCP2210 device status
+
+=head1 SYNOPSIS
+
+B<unsigned> B<short> B<mcp2210_status_no_ext_request> (B<mcp2210_packet> I<status_packet>);
+
+B<unsigned> B<short> B<mcp2210_status_bus_owner> (B<mcp2210_packet> I<status_packet>);
+
+B<unsigned> B<short> B<mcp2210_status_password_count> (B<mcp2210_packet> I<status_packet>);
+
+B<unsigned> B<short> B<mcp2210_status_password_guessed> (B<mcp2210_packet> I<status_packet>);
+
+=head1 DESCRIPTION
+
+These routines extract the device status from a response to I<MCP2210_STATUS_GET>
+command. The status is read-only.
+
+B<mcp2210_status_no_ext_request>() returns zero if data in I<status_packet>
+indicates that an external master requested access to the bus, a positive
+number otherwise.
+
+B<mcp2210_status_bus_owner> returns the bus owner indicated in I<status_packet>.
+
+=over
+
+=item I<MCP2210_STATUS_SPI_OWNER_NONE>
+
+The SPI bus is not claimed by any owner.
+
+=item I<MCP2210_STATUS_SPI_OWNER_US>
+
+The SPI bus is owned by us.
+
+=item I<MCP2210_STATUS_SPI_OWNER_USB>
+
+The SPI bus is owned by the usb device.
+
+=item I<MCP2210_STATUS_SPI_OWNER_EXT>
+
+The SPI bus is owned by an external owner.
+
+=back
+
+B<mcp2210_status_password_count> gets the number of times the chip unlock
+with a password was attempted.
+
+B<mcp2210_status_password_guessed>() returns a non-zero value if there was
+a successful unlock attempt.
+
+=head1 RETURN VALUE
+
+None of the functions is able to fail with an error code.
+
+=head1 EXAMPLES
+
+  /* Read in the device status. */
+  if ((ret = mcp2210_command (fd, packet, MCP2210_STATUS_GET)) < 0)
+      goto out;
+
+  if (mcp2210_status_no_ext_request (packet) &&
+      mcp2210_status_bus_owner (packet) == MCP2210_STATUS_SPI_OWNER_US) {
+      printf ("We own the bus and noone else wants it!\n");
+  }
+
+  out: if (ret < 0)
+      fprintf (stderr, "Trouble: %s\n", mcp2210_strerror (err));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>, L<libmcp2210_eeprom(3)>

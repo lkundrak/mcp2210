@@ -1,0 +1,311 @@
+=head1 NAME
+
+mcp2210-util - MCP2210 Utility
+
+=head1 SYNOPSIS
+
+B<mcp2210> I<device>
+
+[ --runtime | --nvram | --both ]
+
+[ --dump-all ]
+[ --dump-nvram ]
+[ --dump-nvram-usb ]
+[ --dump-status ]
+[ --dump-runtime ]
+[ --dump-runtime-gpio ]
+[ --dump-spi ]
+[ --dump-chip ]
+[ --dump-eeprom ]
+
+[ --on | --off I<pin> ]
+[ --out | --in I<pin> ]
+[ --val I<pin> ]
+[ --dir I<pin> ]
+[ --gpio | --cs | --func I<pin> ]
+
+[ --default-on | --default-off I<pin> ]
+[ --default-val I<pin> ]
+[ --default-out | --default-in I<pin> ]
+[ --default-dir I<pin> ]
+
+[ --gp6-count-high | --gp6-count-low | --gp6-count-rising | --gp6-count-falling ]
+
+[ --usb-wakeup | --no-usb-wakeup ]
+[ --spi-release | --no-spi-release ]
+[ --lock-none | --lock-password | --lock-permanent ]
+
+[ --password I<password> ]
+[ --bit-rate I<rate> ]
+[ --active-cs-on | --active-cs-off I<pin> ]
+[ --active-cs-val I<pin> ]
+[ --idle-cs-on | --idle-cs-off I<pin> ]
+[ --idle-cs-val I<pin> ]
+[ --cs-to-data-delay I<us> ]
+[ --data-to-cs-delay I<us> ]
+[ --byte-delay I<us> ]
+[ --tx-size I<bytes> ]
+[ --spi-mode I<mode> ]
+[ --vendor-id I<id> ]
+[ --product-id I<id> ]
+[ --host-powered | --no-host-powered ]
+[ --self-powered | --no-self-powered ]
+[ --remote-wakeup | --no-remote-wakeup ]
+[ --host-current I<uA> ]
+[ --usb-manufacturer I<string> ]
+[ --usb-product I<string> ]
+[ --unlock I<password> ]
+[ --spi-tx I<data> ]
+[ --spi-cancel ]
+
+...
+
+=head1 DESCRIPTION
+
+This tool issues commands to the MCP2210 device specified with the I<device> 
+argument. I<device> needs to be a Linux HIDRAW device (F</dev/hidraw*>).
+
+=head1 OPTIONS
+
+=over
+
+=item B<--runtime> | B<--nvram> | B<--both>
+
+Set the backing memory to operate on with chip and SPI settings.
+Affects the following options, but not the preceding ones.
+
+Defaults to B<--runtime>.
+
+=item B<--dump-all>
+
+Dump all available information for the device in human readable form.
+
+=item B<--dump-nvram>
+
+Dump the power-on configuration for the device.
+
+=item B<--dump-nvram-usb>
+
+Dump the USB key settings for the device.
+
+=item B<--dump-status>
+
+Dump the device status.
+
+=item B<--dump-runtime>
+
+Dump the runtime configuration for the device.
+
+=item B<--dump-runtime-gpio>
+
+Dump the runtime status of the GPIO pins.
+
+=item B<--dump-spi>
+
+Dump the SPI configuration (runtime or power-on as selected).
+
+=item B<--dump-chip>
+
+Dump the chip configuration (runtime or power-on as selected).
+
+=item B<--dump-eeprom>
+
+Dump the EEPROM memory contents.
+
+=item B<--on> | B<--off> I<pin>
+
+Turn the given GPIO pin on or off at runtime.
+
+=item B<--out> | B<--in> I<pin>
+
+Change the GPIO pin direction at runtime.
+
+=item B<--val> I<pin>
+
+Read a value of GPIO pin at runtime.
+
+=item B<--dir> I<pin>
+
+Read the direction of GPIO pin at runtime.
+
+=item B<--gpio> | B<--cs> | B<--func> I<pin>
+
+Change the pin functionality.
+
+=item B<--default-on> | B<--default-off> I<pin>
+
+Change the default value for the pin.
+
+=item B<--default-val> I<pin>
+
+Read the default value for the pin.
+
+=item B<--default-out> | B<--default-in> I<pin>
+
+Change the default direction for the pin.
+
+=item B<--default-dir> I<pin>
+
+Read the default direction for the pin.
+
+=item B<--gp6-count-high> | B<--gp6-count-low> | B<--gp6-count-rising> | B<--gp6-count-falling>
+
+Change the GP6 pin count mode.
+
+=item B<--usb-wakeup> | B<--no-usb-wakeup>
+
+Configure whether the USB remote wakeup capability is on.
+
+=item B<--spi-release> | B<--no-spi-release>
+
+Configure whether the SPI bus is released between transfers.
+
+=item B<--lock-none> | B<--lock-password> | B<--lock-permanent>
+
+Enable or disable the locking mode of the device.
+
+Caution: B<--lock-permanent> can not be turned off!
+
+=item B<--password> I<password>
+
+Change the device password.
+
+=item B<--bit-rate> I<rate>
+
+Change the SPI bit rate.
+
+=item B<--active-cs-on> | B<--active-cs-off> I<pin>
+
+Control whether the pin is on or off when used as CS during the SPI transaction.
+
+=item B<--active-cs-val> I<pin>
+
+Read whether the pin is on or off when used as CS during the SPI transaction.
+
+=item B<--idle-cs-on> | B<--idle-cs-off> I<pin>
+
+Control whether the pin is on or off when used as CS outside the SPI transaction.
+
+=item B<--idle-cs-val> I<pin>
+
+Read whether the pin is on or off when used as CS outside the SPI transaction.
+
+=item B<--cs-to-data-delay> I<us>
+
+Change the delay between assertion of CS pin and the first data bit.
+
+=item B<--data-to-cs-delay> I<us>
+
+Change the delay between the last data bit and deassertion of CS pin.
+
+=item B<--byte-delay> I<us>
+
+Change the delay between the bytes.
+
+=item B<--tx-size> I<bytes>
+
+Change the configured SPI transaction size.
+
+=item B<--spi-mode> I<mode>
+
+Change the configured SPI mode.
+
+=item B<--vendor-id> I<id>
+
+Change the USB vendor id in the NVRAM.
+
+=item B<--product-id> I<id>
+
+Change the USB product id in the NVRAM.
+
+=item B<--host-powered> | B<--no-host-powered>
+
+Enable or disable the indication of powering fro mthe USB host.
+
+=item B<--self-powered> | B<--no-self-powered>
+
+Enable or disable the indication of self-powering.
+
+=item B<--remote-wakeup> | B<--no-remote-wakeup>
+
+Enable or disable the indication of USB remote wakeup capability.
+
+=item B<--host-current> I<uA>
+
+Configure the indicated current draw from the USB host.
+
+=item B<--usb-manufacturer> I<string>
+
+Configure the USB manufacturer string.
+
+=item B<--usb-product> I<string>
+
+Configure the USB product string.
+
+=item B<--unlock> I<password>
+
+Attempt to unlock the device with given password.
+
+=item B<--spi-tx> I<data>
+
+Transfer the data on the SPI bus.
+
+=item B<--spi-cancel>
+
+Cancel the ongoing SPI transaction.
+
+=back
+
+=head1 RETURN VALUE
+
+Zero indicates success, non-zero (currently always 1) indicates failure.
+
+=head1 EXAMPLES
+
+=over
+
+=item B<mcp2210-util --dump-all>
+
+Barf the device state.
+
+=item B<mcp2210-util --both --gpio 8 --on 8 --out 8 --default-on 8 --default-out 8>
+
+Turn on the GPIO pin 8 and ensure it's on on power-on.
+
+=item B<mcp2210-util --spi-mode 0 --bit-rate 4000 --spi-tx 'Hello World!'>
+
+Transfer a string on SPI.
+
+=back
+
+=head1 BUGS
+
+Too many options.
+
+=head1 AUTHORS
+
+Copyright (C) 2016  Lubomir Rintel <lkundrak@v3.sk>
+
+The source code repository can be obtained from
+L<https://github.com/lkundrak/mcp2210>. Bug fixes and feature
+ehancements licensed under same conditions as btkbdd are welcome
+via GIT pull requests.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=head1 SEE ALSO
+
+L<libmcp2210(7)>, L<http://ww1.microchip.com/downloads/en/DeviceDoc/22288A.pdf>

@@ -1,0 +1,89 @@
+=head1 NAME
+
+libmcp2210 - MCP2210 Support Library
+
+=head1 SYNOPSIS
+
+  -lmcp2210
+
+  #include <mcp2210.h>
+
+=head1 DESCRIPTION
+
+B<libmcp2210> is a fairly low level support library for MCP2210 USB-to-SPI
+bridge devices. It provides interfaces to all functionality provided by the device.
+For the communication with the device there are routines with partly overlaying
+functionality, convenience functions layered on top of lower level functions.
+
+Refer to the device data sheet for the description of device operation.
+
+The manual is structured into following sections:
+
+=over
+
+=item L<libmcp2210_general(3)>
+
+General Functionality. Routines to issue the commands and deal with the error
+conditions.
+
+=item L<libmcp2210_eeprom(3)>
+
+EEPROM memory access routines.
+
+=item L<libmcp2210_status(3)>
+
+Device Status routines.
+
+=item L<libmcp2210_chip(3)>
+
+Chip Control routines.
+
+=item L<libmcp2210_gpio(3)>
+
+GPIO Control routines.
+
+=item L<libmcp2210_spi(3)>
+
+SPI settings and transaction control.
+
+=item L<libmcp2210_usb(3)>
+
+USB key settings.
+
+=back
+
+=head1 BUGS
+
+All communication and delays are blocking.
+
+No libusb support.
+
+No udev support for device discovery.
+
+=head1 AUTHORS
+
+Copyright (C) 2016  Lubomir Rintel <lkundrak@v3.sk>
+
+The source code repository can be obtained from
+L<https://github.com/lkundrak/mcp2210>. Bug fixes and feature
+ehancements licensed under same conditions as btkbdd are welcome
+via GIT pull requests.
+
+=head1 LICENSE
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=head1 SEE ALSO
+
+L<mcp2210-util(8)>, L<http://ww1.microchip.com/downloads/en/DeviceDoc/22288A.pdf>

@@ -1,0 +1,55 @@
+=head1 NAME
+
+libmcp2210 - MCP2210 EEPROM access
+
+=head1 SYNOPSIS
+
+B<int> B<mcp2210_read_eeprom> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<addr>);
+
+B<int> B<mcp2210_write_eeprom> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<addr>, B<unsigned> B<short> I<val>);
+
+B<int> B<mcp2210_unlock_eeprom> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<const> B<char> *I<passwd>);
+
+=head1 DESCRIPTION
+
+B<mcp2210_read_eeprom>() reads the EEPROM byte at the address I<addr> and
+B<mcp2210_write_eeprom>() writes the byte I<val> at given address.
+B<mcp2210_write_eeprom>() will fail when the device is locked for writes.
+
+The EEPROM of the device can be optionally locked with password or permanently.
+If the device is protected with a password, it can be be unlocked with a call
+to B<mcp2210_unlock_eeprom>(). If the device is locked permanently,
+B<mcp2210_write_eeprom>() will always fail.
+
+B<mcp2210_unlock_eeprom>() sends a password of I<MCP2210_PASSWORD_LEN> bytes to
+the device.
+
+=head1 RETURN VALUE
+
+B<mcp2210_read_eeprom>(), B<mcp2210_write_eeprom>() and B<mcp2210_unlock_eeprom>()
+return a negative error value on error. On successful read B<mcp2210_read_eeprom>()
+returns the byte value retrieved while B<mcp2210_write_eeprom> and
+B<mcp2210_unlock_eeprom>() return zero.
+
+=head1 EXAMPLES
+
+  int ret;
+  mcp2210_packet packet = { 0, };
+  char password[MCP2210_PASSWORD_LEN} = "hello";
+
+  /* Try to unlock the device first. */
+  if ((ret = mcp2210_unlock_eeprom (fd, packet, password)) < 0)
+      goto out;
+
+  /* XOR the 10th byte with 0xff. */
+  if ((ret = mcp2210_read_eeprom (fd, packet, 10)) < 0)
+      goto out;
+  if ((ret = mcp2210_write_eeprom (fd, packet, ret ^ 0xff)) < 0)
+      goto out;
+
+  out: if (ret < 0)
+      fprintf (stderr, "Trouble: %s\n", mcp2210_strerror (err));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>, L<libmcp2210_status(3)>, L<libmcp2210_chip(3)>

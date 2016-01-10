@@ -1,0 +1,216 @@
+=head1 NAME
+
+libmcp2210_general - MCP2210 General functionality
+
+=head1 SYNOPSIS
+
+B<int> B<mcp2210_command> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<command>);
+
+B<int> B<mcp2210_get_command> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<command>);
+
+B<int> B<mcp2210_subcommand> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<command>, B<unsigned> B<short> I<subcommand>);
+
+B<int> B<mcp2210_get_nvram> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<subcommand>);
+
+B<int> B<mcp2210_set_nvram> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<subcommand>);
+
+B<const> B<char> *B<mcp2210_strerror> (B<int> I<mcp2210_errno>);
+
+B<int> B<mcp2210_gp6_count_get> (B<int> I<fd>, B<mcp2210_packet> I<packet>, B<unsigned> B<short> I<no_reset>);
+
+=head1 DESCRIPTION
+
+This sections documents the essential functions for data exchange with the
+device. In general, you obtain the information from the device with these
+functions, do modifications with appropriate subsystem-specific functionality
+documented in other parts of the manual and send the data back in with
+functions documented here.
+
+B<mcp2210_command>() sets the command code of the I<packet> to specified
+I<command>, sends the packet, reads the response back into I<packet>. This
+function also handles the error checking. The I<fd> needs to be a descriptor
+of a I<hidraw> device opened for reading and writing. The packet is an array of
+I<MCP2210_PACKET_SIZE> bytes. Use the B<mcp2210_packet> type to define it.
+The valid command codes are:
+
+=over
+
+=item I<MCP2210_STATUS_GET>
+
+Get the device status. The routines to get details from the status packet
+are described in L<mcp2210_status(3)>.
+
+=item I<MCP2210_SPI_CANCEL>
+
+Cancel the SPI transaction. This command is useful for cleaning up after
+unfinshed SPI transactions; it can be used in cleanup paths (e.g. when
+the user aborts a program during SPI transfer or on startup).
+
+=item I<MCP2210_GP6_COUNT_GET>
+
+Get the GP6 special function counter. You can use B<mcp2210_gp6_count_get>()
+as a convenience mechanism to call the command.
+
+=item I<MCP2210_CHIP_GET>, I<MCP2210_CHIP_SET>
+
+Get and set the runtime chip settings. See L<mcp2210_chip(3)> for details
+on handling the chip settings.
+
+=item I<MCP2210_GPIO_VAL_SET>, I<MCP2210_GPIO_VAL_GET>
+
+Get and control the currently active values of the GPIO pins. See
+L<mcp2210_gpio(3)> for details on accessing the individual pins.
+
+=item I<MCP2210_GPIO_DIR_SET>, I<MCP2210_GPIO_DIR_GET>
+
+Get and control the currently active directions of the GPIO pins. See
+L<mcp2210_gpio(3)> for details on accessing the individual pins.
+
+=item I<MCP2210_SPI_SET>, I<MCP2210_SPI_GET>
+
+Get and modify the currently active SPI settings. See L<mcp2210_spi(3)> for
+details on accessing the individual settings.
+
+=item I<MCP2210_SPI_TRANSFER>
+
+Transfer a chunk of a SPI transaction. The complete transaction (with
+proper chunking and timing) can be run with L<mcp2210_transaction(3)>.
+
+You need to set the correct transaction parameters, notably the size,
+with I<MCP2210_SPI_SET> first.
+
+=item I<MCP2210_EEPROM_READ>, I<MCP2210_EEPROM_WRITE>
+
+Access the user EEPROM. L<mcp2210_eeprom(3)> documents the helpers for
+convenient EEPROM memory access.
+
+=item I<MCP2210_NVRAM_SET>, I<MCP2210_NVRAM_GET>
+
+Read and modify the power-on device settings. The B<mcp2210_get_nvram>()
+and B<mcp2210_set_nvram> should be used for convenience and proper sanity
+checking.
+
+=item I<MCP2210_SEND_PASSWORD>
+
+Send the password to unlock the device. L<mcp2210_eeprom_unlock(3)> is
+a convenience wrapper.
+
+=item I<MCP2210_GP7_SPI_RELEASE>
+
+=back
+
+Release the SPI bus when GP7 pin is configured for its special function.
+
+B<mcp2210_get_command>() is a wrapper around B<mcp2210_command>() that first
+clears the I<packet> first. This is useful for the commands that get data
+from the device.
+
+B<mcp2210_subcommand>() also sets the sub-command code for commands that support
+it (I<MCP2210_NVRAM_SET> and I<MCP2210_NVRAM_GET>). It does some extra
+error checking.
+
+B<mcp2210_get_nvram>() gets the settings specified by I<subcommand> from the
+NVRAM. B<mcp2210_get_nvram>() sets the settings.
+
+B<mcp2210_strerror>() translates the (negative) error code from the library
+calls to a human-readable string.
+
+B<mcp2210_gp6_count_get>() reads the interrupt counter for the I<GP6> pin
+if it's set as a function pin. It resets the counter unless I<no_reset>
+is set to a non-zero value. The I<packet> structure does not need to
+be initialized to any meaningful data.
+
+=head1 ERRORS
+
+When a function indicates error, it returns a negative error value. If the
+value is -1, then I<errno> indicates the error, otherwise its absolute value
+indicates a library or device error (useful with B<mcp2210_strerror>):
+
+=over
+
+=item I<MCP2210_ESPIBUSY>
+
+A device indicated error: External master controls the SPI bus. You need to
+wait for it to release the bus and retry the command.
+
+=item I<MCP2210_ESPIINPROGRESS>
+
+A device indicated error: SPI transfer already in progress. You may need to
+cancel it with I<MCP2210_SPI_CANCEL> first.
+
+=item I<MCP2210_ENOCMD>
+
+A device indicated error: No such command. You sent a bad command code.
+
+=item I<MCP2210_EWRFAIL>
+
+A device indicated error: EEPROM write failed. May indicate a hardware problem.
+
+=item I<MCP2210_ELOCKED>
+
+A device indicated error: EEPROM is locked. If it's not locked permanently, you
+need to unlock it with L<mcp221o_eeprom_unlock(3)>.
+
+=item I<MCP2210_ENOACCESS>
+
+A device indicated error: Access rejected.
+
+=item I<MCP2210_ECONDACCESS>
+
+A device indicated error: Bad password.
+
+=item I<MCP2210_EWRSHORT>
+
+The library indicated a problem: Short write. Maybe you're talking to the wrong
+device.
+
+=item I<MCP2210_ERDSHORT>
+
+The library indicated a problem: Short read. Maybe you're talking to the wrong
+device.
+
+=item I<MCP2210_EBADCMD>
+
+The library indicated a problem: Response command code mismatch. The response
+was to a different command. Maybe something else is accessing the device.
+
+=item I<MCP2210_EBADSUBCMD>
+
+The library indicated a problem: Response sub-command code mismatch. Maybe
+something else is accessing the device.
+
+=item I<MCP2210_EBADADDR>
+
+The library indicated a problem: Response address mismatch. Maybe something
+else is accessing the device.
+
+=item I<MCP2210_EBADTXSTAT>
+
+The library indicated a problem: Invalid SPI transfer status.
+
+=back
+
+=head1 RETURN VALUE
+
+B<mcp2210_command>(), B<mcp2210_get_command>(), B<mcp2210_subcommand>(),
+B<mcp2210_get_nvram>() and B<mcp2210_set_nvram>() return 0 on success and
+a negative value on error.
+
+B<mcp2210_strerror>() returns a statically allocated character array (do not free).
+
+B<mcp2210_gp6_count_get>() returns a positive number of interrupts or a negative
+error code.
+
+=head1 EXAMPLES
+
+  int ret;
+  mcp2210_packet packet = { 0, };
+
+  fd = open ("/dev/hidraw666", O_RDWR);
+  ret = mcp2210_command (fd, packet, MCP2210_SPI_CANCEL);
+  if (read < 0)
+      fprintf (stderr, "The front fell off: %s\n", mcp2210_strerror (ret));
+
+=head1 SEE ALSO
+
+L<libmcp2210(3)>
