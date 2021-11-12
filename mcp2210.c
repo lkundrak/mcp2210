@@ -223,7 +223,7 @@ mcp2210_spi_transfer (int fd, mcp2210_packet spi_packet, char *data, short len)
 
 retry:
 		packet[1] = wr_len;
-		memcpy (&packet[2], &data[wr], wr_len);
+		memcpy (&packet[4], &data[wr], wr_len);
 		ret = mcp2210_command (fd, packet, MCP2210_SPI_TRANSFER);
 
 		nanosleep (&delay, NULL);
